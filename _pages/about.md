@@ -2,7 +2,7 @@
 layout: about
 title: About
 permalink: /
-subtitle: <a href='#'>University of California Santa Barbara</a>.
+subtitle: <a href='https://ucsb.edu'>University of California Santa Barbara</a>.
 
 profile:
   align: right
