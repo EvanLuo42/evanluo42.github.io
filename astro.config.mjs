@@ -8,5 +8,6 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()]
   },
-  site: 'https://sites.cs.ucsb.edu/~evanluo'
+  site: 'https://sites.cs.ucsb.edu',
+  base: '/~evanluo'
 });
