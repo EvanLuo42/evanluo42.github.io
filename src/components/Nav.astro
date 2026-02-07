@@ -1,6 +1,8 @@
 ---
 import { profile } from "../data/profile";
 
+const base = import.meta.env.BASE_URL;
+
 const navLinks = [
     { label: "About", href: "#about" },
     { label: "Publications", href: "#publications" },
@@ -18,7 +20,7 @@ const navLinks = [
         class="max-w-5xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between"
     >
         <a
-            href="/"
+            href={base}
             class="text-lg font-semibold text-stone-900 tracking-tight hover:text-teal-700 transition-colors"
         >
             {profile.name}
@@ -40,7 +42,7 @@ const navLinks = [
             }
             <li>
                 <a
-                    href="/cv.pdf"
+                    href={`${base}cv.pdf`}
                     class="text-sm font-medium px-4 py-2 rounded-lg bg-teal-700 text-white hover:bg-teal-800 transition-colors"
                 >
                     CV ↓
@@ -89,7 +91,7 @@ const navLinks = [
             }
             <li>
                 <a
-                    href="/cv.pdf"
+                    href={`${base}cv.pdf`}
                     class="inline-block text-sm font-medium px-4 py-2 rounded-lg bg-teal-700 text-white hover:bg-teal-800 transition-colors"
                 >
                     Download CV
