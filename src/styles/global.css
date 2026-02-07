@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4rem;
+}
+
+/* Prevent horizontal overflow on mobile */
+body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Selection color */
+::selection {
+    background-color: #ccfbf1;
+    color: #134e4a;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #fafaf9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d6d3d1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a29e;
+}
