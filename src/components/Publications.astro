@@ -1,27 +1,51 @@
 ---
-import { publications, highlightedAuthor } from "../data/publications";
+import { getCollection } from "astro:content";
 
-const selected = publications.filter((p) => p.selected);
-const allByYear = publications.reduce(
-    (acc, pub) => {
-        (acc[pub.year] = acc[pub.year] || []).push(pub);
+const allPubs = await getCollection("publications");
+const allPreprints = await getCollection("preprints");
+const highlightedAuthor = "Evan Luo";
+
+const selected = allPubs.filter((p) => p.data.selected);
+
+const statusLabels: Record<string, string> = {
+    preprint: "Preprint",
+    manuscript: "Manuscript",
+    "under review": "Under Review",
+    "in preparation": "In Preparation",
+};
+
+type CombinedItem = {
+    kind: "pub" | "preprint";
+    data: { title: string; authors: string[]; year: number; venue?: string; status?: string; tags: string[]; links: { paper?: string; code?: string; arxiv?: string }; selected?: boolean };
+    body?: string;
+};
+
+const combined: CombinedItem[] = [
+    ...allPubs.map((p) => ({ kind: "pub" as const, data: { ...p.data, venue: p.data.venue }, body: p.body })),
+    ...allPreprints.map((p) => ({ kind: "preprint" as const, data: { ...p.data, status: p.data.status }, body: p.body })),
+];
+
+const allByYear = combined.reduce(
+    (acc, item) => {
+        (acc[item.data.year] = acc[item.data.year] || []).push(item);
         return acc;
     },
-    {} as Record<number, typeof publications>,
+    {} as Record<number, CombinedItem[]>,
 );
 const sortedYears = Object.keys(allByYear)
     .map(Number)
     .sort((a, b) => b - a);
 ---
 
-<!-- Selected Publications -->
+{allPubs.length > 0 && (
 <section id="publications" class="py-12 sm:py-16">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         <h2 class="text-3xl font-bold text-stone-900 tracking-tight">
             Selected Publications
         </h2>
-        <p class="mt-2 text-stone-500">Highlighted research contributions</p>
+        <p class="mt-2 text-stone-500">Research contributions</p>
 
+        {selected.length > 0 && (
         <div class="mt-8 space-y-6">
             {
                 selected.map((pub) => (
@@ -29,10 +53,10 @@ const sortedYears = Object.keys(allByYear)
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex-1">
                                 <h3 class="text-lg font-semibold text-stone-900 group-hover:text-teal-800 transition-colors leading-snug">
-                                    {pub.title}
+                                    {pub.data.title}
                                 </h3>
                                 <p class="mt-1.5 text-sm text-stone-500">
-                                    {pub.authors.map((a, i) => (
+                                    {pub.data.authors.map((a, i) => (
                                         <>
                                             {i > 0 && ", "}
                                             <span
@@ -48,13 +72,13 @@ const sortedYears = Object.keys(allByYear)
                                     ))}
                                 </p>
                                 <p class="mt-2 text-sm text-stone-500 leading-relaxed">
-                                    {pub.abstract}
+                                    {pub.body}
                                 </p>
                                 <div class="mt-3 flex flex-wrap items-center gap-2">
                                     <span class="px-2.5 py-0.5 text-xs font-semibold bg-teal-700 text-white rounded-md">
-                                        {pub.venue}
+                                        {pub.data.venue}
                                     </span>
-                                    {pub.tags.map((tag) => (
+                                    {pub.data.tags.map((tag) => (
                                         <span class="px-2 py-0.5 text-xs font-medium bg-stone-100 text-stone-600 rounded-md">
                                             {tag}
                                         </span>
@@ -62,70 +86,30 @@ const sortedYears = Object.keys(allByYear)
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 sm:mt-4 flex flex-wrap items-center gap-3 text-sm">
-                            {pub.links.paper && (
+                        <div class="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 text-sm">
+                            {pub.data.links.paper && (
                                 <a
-                                    href={pub.links.paper}
-                                    class="inline-flex items-center gap-1.5 text-teal-700 hover:text-teal-900 font-medium transition-colors"
+                                    href={pub.data.links.paper}
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-900 font-medium transition-colors"
                                 >
-                                    <svg
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        />
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     Paper
                                 </a>
                             )}
-                            {pub.links.code && (
-                                <a
-                                    href={pub.links.code}
-                                    target="_blank"
-                                    rel="noopener"
-                                    class="inline-flex items-center gap-1.5 text-teal-700 hover:text-teal-900 font-medium transition-colors"
-                                >
-                                    <svg
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                                        />
+                            {pub.data.links.code && (
+                                <a href={pub.data.links.code} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-900 font-medium transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                                     </svg>
                                     Code
                                 </a>
                             )}
-                            {pub.links.arxiv && (
-                                <a
-                                    href={pub.links.arxiv}
-                                    target="_blank"
-                                    rel="noopener"
-                                    class="inline-flex items-center gap-1.5 text-teal-700 hover:text-teal-900 font-medium transition-colors"
-                                >
-                                    <svg
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                        />
+                            {pub.data.links.arxiv && (
+                                <a href={pub.data.links.arxiv} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-900 font-medium transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                     </svg>
                                     arXiv
                                 </a>
@@ -135,16 +119,15 @@ const sortedYears = Object.keys(allByYear)
                 ))
             }
         </div>
+        )}
 
-        <!-- All Publications -->
-        <div class="mt-20">
+        <div class={selected.length > 0 ? "mt-20" : "mt-8"}>
             <h2 class="text-3xl font-bold text-stone-900 tracking-tight">
                 All Publications
             </h2>
             <p class="mt-2 text-stone-500">
-                Complete list of publications by year
+                Complete list of publications and preprints by year
             </p>
-
             <div class="mt-8 space-y-10">
                 {
                     sortedYears.map((year) => (
@@ -153,101 +136,63 @@ const sortedYears = Object.keys(allByYear)
                                 {year}
                             </h3>
                             <div class="space-y-4">
-                                {allByYear[year].map((pub) => (
+                                {allByYear[year].map((item) => (
                                     <article class="group pl-4 border-l-2 border-stone-200 hover:border-teal-500 transition-colors">
                                         <h4 class="font-semibold text-stone-800 group-hover:text-teal-800 transition-colors leading-snug">
-                                            {pub.title}
+                                            {item.data.title}
                                         </h4>
                                         <p class="mt-1 text-sm text-stone-500">
-                                            {pub.authors.map((a, i) => (
+                                            {item.data.authors.map((a, i) => (
                                                 <>
                                                     {i > 0 && ", "}
-                                                    <span
-                                                        class={
-                                                            a ===
-                                                            highlightedAuthor
-                                                                ? "font-semibold text-stone-700"
-                                                                : ""
-                                                        }
-                                                    >
+                                                    <span class={a === highlightedAuthor ? "font-semibold text-stone-700" : ""}>
                                                         {a}
                                                     </span>
                                                 </>
                                             ))}
                                         </p>
                                         <div class="mt-2 flex flex-wrap items-center gap-2">
-                                            <span class="px-2 py-0.5 text-xs font-semibold bg-teal-50 text-teal-800 rounded border border-teal-200">
-                                                {pub.venue}
-                                            </span>
-                                            {pub.selected && (
+                                            {item.kind === "pub" && item.data.venue && (
+                                                <span class="px-2 py-0.5 text-xs font-semibold bg-teal-50 text-teal-800 rounded border border-teal-200">
+                                                    {item.data.venue}
+                                                </span>
+                                            )}
+                                            {item.kind === "preprint" && item.data.status && (
+                                                <span class="px-2 py-0.5 text-xs font-semibold bg-teal-50 text-teal-800 rounded border border-teal-200">
+                                                    {statusLabels[item.data.status] || item.data.status}
+                                                </span>
+                                            )}
+                                            {item.kind === "pub" && item.data.selected && (
                                                 <span class="px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-700 rounded border border-amber-200">
                                                     ★ Selected
                                                 </span>
                                             )}
-                                            <div class="flex items-center gap-3 sm:ml-auto text-xs">
-                                                {pub.links.paper && (
-                                                    <a
-                                                        href={pub.links.paper}
-                                                        class="inline-flex items-center gap-1 text-teal-700 hover:text-teal-900 font-medium transition-colors"
-                                                    >
-                                                        <svg
-                                                            class="w-3.5 h-3.5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                            />
+                                            {item.data.tags.map((tag) => (
+                                                <span class="px-2 py-0.5 text-xs font-medium bg-stone-100 text-stone-600 rounded-md">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                            <div class="flex items-center gap-2 sm:ml-auto text-xs">
+                                                {item.data.links.paper && (
+                                                    <a href={item.data.links.paper} class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-900 font-medium transition-colors">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                         </svg>
                                                         Paper
                                                     </a>
                                                 )}
-                                                {pub.links.code && (
-                                                    <a
-                                                        href={pub.links.code}
-                                                        target="_blank"
-                                                        rel="noopener"
-                                                        class="inline-flex items-center gap-1 text-teal-700 hover:text-teal-900 font-medium transition-colors"
-                                                    >
-                                                        <svg
-                                                            class="w-3.5 h-3.5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                                                            />
+                                                {item.data.links.code && (
+                                                    <a href={item.data.links.code} target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-900 font-medium transition-colors">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                                                         </svg>
                                                         Code
                                                     </a>
                                                 )}
-                                                {pub.links.arxiv && (
-                                                    <a
-                                                        href={pub.links.arxiv}
-                                                        target="_blank"
-                                                        rel="noopener"
-                                                        class="inline-flex items-center gap-1 text-teal-700 hover:text-teal-900 font-medium transition-colors"
-                                                    >
-                                                        <svg
-                                                            class="w-3.5 h-3.5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                                            />
+                                                {item.data.links.arxiv && (
+                                                    <a href={item.data.links.arxiv} target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 hover:text-teal-900 font-medium transition-colors">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                                         </svg>
                                                         arXiv
                                                     </a>
@@ -264,3 +209,4 @@ const sortedYears = Object.keys(allByYear)
         </div>
     </div>
 </section>
+)}

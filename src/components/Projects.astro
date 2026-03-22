@@ -1,5 +1,8 @@
 ---
-import { projects } from "../data/projects";
+import { getCollection } from "astro:content";
+
+const allProjects = await getCollection("projects");
+const projects = allProjects.sort((a, b) => a.data.order - b.data.order);
 ---
 
 <section id="projects" class="py-12 sm:py-16 bg-white">
@@ -31,22 +34,22 @@ import { projects } from "../data/projects";
                                     />
                                 </svg>
                                 <h3 class="text-lg font-semibold text-stone-900 group-hover:text-teal-800 transition-colors">
-                                    {project.title}
+                                    {project.data.title}
                                 </h3>
                             </div>
                             <span
-                                class={`px-2 py-0.5 text-xs font-medium rounded-full ${project.status === "Active" ? "bg-green-50 text-green-700 border border-green-200" : "bg-stone-100 text-stone-500 border border-stone-200"}`}
+                                class={`px-2 py-0.5 text-xs font-medium rounded-full ${project.data.status === "Active" ? "bg-green-50 text-green-700 border border-green-200" : "bg-stone-100 text-stone-500 border border-stone-200"}`}
                             >
-                                {project.status}
+                                {project.data.status}
                             </span>
                         </div>
 
                         <p class="mt-3 text-sm text-stone-600 leading-relaxed flex-1">
-                            {project.description}
+                            {project.body}
                         </p>
 
                         <div class="mt-4 flex flex-wrap gap-1.5">
-                            {project.tags.map((tag) => (
+                            {project.data.tags.map((tag) => (
                                 <span class="px-2 py-0.5 text-xs font-medium bg-stone-100 text-stone-500 rounded">
                                     {tag}
                                 </span>
@@ -55,9 +58,9 @@ import { projects } from "../data/projects";
 
                         <div class="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between">
                             <div class="flex items-center gap-3 text-sm">
-                                {project.links.github && (
+                                {project.data.links.github && (
                                     <a
-                                        href={project.links.github}
+                                        href={project.data.links.github}
                                         target="_blank"
                                         rel="noopener"
                                         class="inline-flex items-center gap-1 text-teal-700 hover:text-teal-900 font-medium transition-colors"
@@ -72,32 +75,32 @@ import { projects } from "../data/projects";
                                         GitHub
                                     </a>
                                 )}
-                                {project.links.demo && (
+                                {project.data.links.demo && (
                                     <a
-                                        href={project.links.demo}
+                                        href={project.data.links.demo}
                                         class="text-teal-700 hover:text-teal-900 font-medium transition-colors"
                                     >
                                         Demo
                                     </a>
                                 )}
-                                {project.links.docs && (
+                                {project.data.links.docs && (
                                     <a
-                                        href={project.links.docs}
+                                        href={project.data.links.docs}
                                         class="text-teal-700 hover:text-teal-900 font-medium transition-colors"
                                     >
                                         Docs
                                     </a>
                                 )}
-                                {project.links.paper && (
+                                {project.data.links.paper && (
                                     <a
-                                        href={project.links.paper}
+                                        href={project.data.links.paper}
                                         class="text-teal-700 hover:text-teal-900 font-medium transition-colors"
                                     >
                                         Paper
                                     </a>
                                 )}
                             </div>
-                            {project.stars && (
+                            {project.data.stars && (
                                 <span class="inline-flex items-center gap-1 text-xs text-stone-400">
                                     <svg
                                         class="w-3.5 h-3.5"
@@ -106,7 +109,7 @@ import { projects } from "../data/projects";
                                     >
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
-                                    {project.stars}
+                                    {project.data.stars}
                                 </span>
                             )}
                         </div>

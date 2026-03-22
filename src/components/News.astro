@@ -1,0 +1,35 @@
+---
+import { getCollection } from "astro:content";
+
+const allNews = await getCollection("news");
+const news = allNews.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const fmt = (date: Date) =>
+    date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+---
+
+{news.length > 0 && (
+<section id="news" class="py-12 sm:py-16 bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        <h2 class="text-3xl font-bold text-stone-900 tracking-tight">
+            News
+        </h2>
+        <p class="mt-2 text-stone-500">Recent updates and announcements</p>
+
+        <div class="mt-8 space-y-4">
+            {
+                news.map((item) => (
+                    <div class="flex gap-4 items-baseline">
+                        <span class="text-base font-medium text-teal-700 whitespace-nowrap min-w-[5rem]">
+                            {fmt(item.data.date)}
+                        </span>
+                        <p class="text-base text-stone-600 leading-relaxed">
+                            {item.body}
+                        </p>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
+)}

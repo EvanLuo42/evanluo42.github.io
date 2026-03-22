@@ -1,5 +1,8 @@
 ---
-import { education } from "../data/experience";
+import { getCollection } from "astro:content";
+
+const allEducation = await getCollection("education");
+const education = allEducation.sort((a, b) => a.data.order - b.data.order);
 ---
 
 <section id="education" class="py-12 sm:py-16 bg-white">
@@ -43,17 +46,17 @@ import { education } from "../data/experience";
                             </div>
                             <div>
                                 <h3 class="font-semibold text-stone-900">
-                                    {edu.degree}
+                                    {edu.data.degree}
                                 </h3>
                                 <p class="text-sm text-teal-700 font-medium">
-                                    {edu.school}
+                                    {edu.data.school}
                                 </p>
                             </div>
                         </div>
                         <p class="text-xs text-stone-400 font-medium">
-                            {edu.period}
+                            {edu.data.period}
                         </p>
-                        <p class="mt-1 text-sm text-stone-600">{edu.detail}</p>
+                        <p class="mt-1 text-sm text-stone-600">{edu.body}</p>
                     </div>
                 ))
             }

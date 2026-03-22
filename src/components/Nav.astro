@@ -1,11 +1,18 @@
 ---
-import { profile } from "../data/profile";
+import { getCollection } from "astro:content";
+
+const profiles = await getCollection("profile");
+const profile = profiles[0].data;
 
 const base = import.meta.env.BASE_URL;
 
+const pubs = await getCollection("publications");
+const news = await getCollection("news");
+
 const navLinks = [
     { label: "About", href: "#about" },
-    { label: "Publications", href: "#publications" },
+    ...(news.length > 0 ? [{ label: "News", href: "#news" }] : []),
+    ...(pubs.length > 0 ? [{ label: "Publications", href: "#publications" }] : []),
     { label: "Education", href: "#education" },
     { label: "Experience", href: "#experience" },
     { label: "Projects", href: "#projects" },

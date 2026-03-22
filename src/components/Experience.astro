@@ -1,5 +1,8 @@
 ---
-import { experiences } from '../data/experience';
+import { getCollection } from "astro:content";
+
+const allExperiences = await getCollection("experiences");
+const experiences = allExperiences.sort((a, b) => a.data.order - b.data.order);
 ---
 
 <section id="experience" class="py-12 sm:py-16">
@@ -17,16 +20,16 @@ import { experiences } from '../data/experience';
         {experiences.map(exp => (
           <div class="relative pl-8">
             <!-- Timeline dot -->
-            <div class={`absolute left-0 top-1.5 w-[15px] h-[15px] rounded-full border-2 ${exp.current ? 'bg-teal-600 border-teal-600 ring-4 ring-teal-100' : 'bg-white border-stone-300'}`}></div>
+            <div class={`absolute left-0 top-1.5 w-[15px] h-[15px] rounded-full border-2 ${exp.data.current ? 'bg-teal-600 border-teal-600 ring-4 ring-teal-100' : 'bg-white border-stone-300'}`}></div>
 
             <div class="bg-white rounded-xl p-4 sm:p-5 border border-stone-200 shadow-sm">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                <h3 class="text-lg font-semibold text-stone-900">{exp.role}</h3>
-                <span class="text-sm text-stone-400 font-medium whitespace-nowrap">{exp.period}</span>
+                <h3 class="text-lg font-semibold text-stone-900">{exp.data.role}</h3>
+                <span class="text-sm text-stone-400 font-medium whitespace-nowrap">{exp.data.period}</span>
               </div>
-              <p class="text-teal-700 font-medium text-sm">{exp.org}</p>
-              <p class="text-stone-400 text-xs">{exp.dept}</p>
-              <p class="mt-2 text-sm text-stone-600 leading-relaxed">{exp.description}</p>
+              <p class="text-teal-700 font-medium text-sm">{exp.data.org}</p>
+              <p class="text-stone-400 text-xs">{exp.data.dept}</p>
+              <p class="mt-2 text-sm text-stone-600 leading-relaxed">{exp.body}</p>
             </div>
           </div>
         ))}
