@@ -37,15 +37,16 @@ const sortedYears = Object.keys(allByYear)
     .sort((a, b) => b - a);
 ---
 
-{allPubs.length > 0 && (
+{(allPubs.length > 0 || allPreprints.length > 0) && (
 <section id="publications" class="py-12 sm:py-16">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        {selected.length > 0 && (
+        <>
         <h2 class="text-3xl font-bold text-stone-900 tracking-tight">
             Selected Publications
         </h2>
         <p class="mt-2 text-stone-500">Research contributions</p>
 
-        {selected.length > 0 && (
         <div class="mt-8 space-y-6">
             {
                 selected.map((pub) => (
@@ -119,6 +120,7 @@ const sortedYears = Object.keys(allByYear)
                 ))
             }
         </div>
+        </>
         )}
 
         <div class={selected.length > 0 ? "mt-20" : "mt-8"}>
